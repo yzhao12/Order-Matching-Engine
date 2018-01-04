@@ -14,5 +14,15 @@ const admin = require('firebase-admin');
 admin.initializeApp(functions.config().firebase);
 
 exports.matchOrders = functions.database.ref('/Orders/{ticker}').onWrite(event => {
-  
+  orderBook = event.data.val();
+  buyBook = orderBook.buy;
+  sellBook = orderBook.sell;
+
+  for(var i = 0; i < buyBook.length && i < sellBook.length; i++) {
+    if(buyBook[i].shares == sellBook[i].shares && buyBook[i].price >= sellBook[i].price) {
+      buyUser = functions.database.ref('/Users/' + buyBook[i].userid);
+      sellUser = functions.database.ref('/Users/' + sellBook[i].userid);
+
+      //adding shares to portfolio for buyer
+      portfolio = buyUser.
 });
