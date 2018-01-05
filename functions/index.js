@@ -17,6 +17,7 @@ exports.matchOrders = functions.database.ref('/Orders/{ticker}').onWrite(event =
   orderBook = event.data.val();
   buyBook = orderBook.buy;
   sellBook = orderBook.sell;
+  var promises = [];
 
   for(var i = 0; i < buyBook.length && i < sellBook.length; i++) {
     if(buyBook[i].shares == sellBook[i].shares && buyBook[i].price >= sellBook[i].price) {
@@ -31,5 +32,24 @@ exports.matchOrders = functions.database.ref('/Orders/{ticker}').onWrite(event =
       });
 
       //adding shares to portfolio for buyer
-      portfolio = buyUser.userPortfolio;
+      var portfolio = buyUser.userPortfolio;
+      var found = portfolio.findIndex(function(element) {return element.ticker === ticker});
+      if(found !== -1) {
+        portfolio[found].shares = portfolio[found].shares + buyBook[i].shares;
+        buyUser.userPortfolio = portfolio;
+        promises.push(functions.database.ref('/Users/' + buyBook[i].userid).set(buyUser));
+      }
+      /*
+      for(var j = 0; j < portfolio.length; j++) {
+        if(portfolio[j].ticker === ticker) {
+          portfolio[j].shares = portfolio[j].shares + buyBook[i].shares;
+          buyUser.userPortfolio = portfolio;
+          buyUser.set(functions.database.ref('/Users/' + buyBook[i].userid);
+        }
+      }
+      */
+
+    }
+  }
+
 });
